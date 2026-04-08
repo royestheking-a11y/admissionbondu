@@ -76,7 +76,7 @@ ROLES:
 5. Format responses with clear headers and bullet points.`;
 
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction: systemPrompt
       });
 
@@ -89,14 +89,32 @@ ROLES:
       const response = await result.response;
       const text = response.text();
 
+      if (!text) {
+        throw new Error("Empty response from AI");
+      }
+
       res.json({ reply: text });
     } catch (error: any) {
       console.error("AI Chat Error:", error);
       
-      // Handle invalid API key specifically
+      // Handle invalid API key
       if (error.message?.includes("API_KEY_INVALID")) {
         return res.status(401).json({ 
           error: "Invalid API Key. Please regenerate a key at AI Studio and update Render." 
+        });
+      }
+
+      // Handle Quota Exceeded
+      if (error.message?.includes("429") || error.message?.includes("QUOTA_EXHAUSTED")) {
+        return res.status(429).json({ 
+          error: "Quota reached! ✨ Please enable the Generative Language API in Google Cloud or check your AI Studio limits." 
+        });
+      }
+
+      // Handle Safety block
+      if (error.message?.includes("SAFETY")) {
+        return res.status(400).json({ 
+          error: "Bondhu covers only admission topics. Let's keep it safe! 🎓" 
         });
       }
 
