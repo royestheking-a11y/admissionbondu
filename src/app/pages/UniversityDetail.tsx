@@ -4,18 +4,21 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   MapPin, Star, GraduationCap, ChevronRight, Calendar, Users,
   Banknote, Clock, Award, BookOpen, Globe, CheckCircle, ArrowRight, Home,
-  Info, Calculator, Receipt, ShieldCheck
+  Info, Calculator, Receipt, ShieldCheck, Heart
 } from "lucide-react";
 import { universities } from "../data/universities";
 import { apiFetch } from "../lib/api";
 import { Seo } from "../components/Seo";
+import { useAuth } from "../context/AuthContext";
 
 const CAMPUS_IMAGE = "https://images.unsplash.com/photo-1682161473727-402b497251b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwYnVpbGRpbmclMjBhcmNoaXRlY3R1cmUlMjBtb2Rlcm58ZW58MXx8fHwxNzc0NDk5MDU2fDA&ixlib=rb-4.1.0&q=80&w=1080";
 
 export default function UniversityDetail() {
+  const { user, token, isLoggedIn } = useAuth();
   const { id } = useParams();
   const [allUniversities, setAllUniversities] = useState<any[]>(universities);
   const [dbUniversity, setDbUniversity] = useState<any | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,13 +37,42 @@ export default function UniversityDetail() {
         const res = await apiFetch<any[]>("/api/universities");
         if (!cancelled && Array.isArray(res) && res.length) setAllUniversities(res);
       } catch {
-        // fallback to bundled data already set
+        // fallback
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [id]);
+
+  // Check if bookmarked
+  useEffect(() => {
+    if (isLoggedIn && token && id) {
+      apiFetch<any>("/api/users/me", { token }).then(u => {
+        if (u && Array.isArray(u.savedUniversities)) {
+          const found = u.savedUniversities.some((s: any) => (s._id || s) === id);
+          setIsBookmarked(found);
+        }
+      }).catch(() => {});
+    }
+  }, [isLoggedIn, token, id]);
+
+  const toggleSave = async () => {
+    if (!isLoggedIn) {
+      alert("Please login to save universities");
+      return;
+    }
+    if (!id) return;
+    try {
+      const res = await apiFetch<any>(`/api/users/saved-universities/${id}`, {
+        method: "POST",
+        token
+      });
+      if (res) {
+        setIsBookmarked(!isBookmarked);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const university = useMemo(() => {
     if (dbUniversity) return dbUniversity;
@@ -133,9 +165,17 @@ export default function UniversityDetail() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-white" style={{ fontSize: "1.8rem", fontWeight: 700 }}>{u.name}</h1>
-                <span className={`px-3 py-1 rounded-full text-xs ${u.type === "public" ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"}`}>
-                  {u.type === "public" ? "Public" : "Private"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs ${u.type === "public" ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"}`}>
+                    {u.type === "public" ? "Public" : "Private"}
+                  </span>
+                  <button 
+                    onClick={toggleSave}
+                    className={`p-2 rounded-xl transition-all ${isBookmarked ? "bg-[#D4A857] text-[#1A0A02]" : "bg-white/10 text-white hover:bg-white/20"}`}
+                  >
+                    <Heart className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
+                  </button>
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-white/60 text-sm">
                 <div className="flex items-center gap-1">

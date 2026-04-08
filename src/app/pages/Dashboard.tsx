@@ -106,6 +106,84 @@ export default function Dashboard() {
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // New states for real data
+  const [userData, setUserData] = useState<any>(user);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>({});
+  const [savedUnis, setSavedUnis] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Load Full User Profile
+  const fetchProfile = async () => {
+    try {
+      const res = await apiFetch<any>(`/api/users/me`, { token });
+      if (res) {
+        setUserData(res);
+        setSavedUnis(res.savedUniversities || []);
+        setEditData({
+          name: res.name,
+          phone: res.phone,
+          sscGpa: res.sscGpa,
+          hscGpa: res.hscGpa,
+          subject: res.subject,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) fetchProfile();
+  }, [isLoggedIn]);
+
+  // Handle Profile Save
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch<any>(`/api/users/profile`, {
+        method: "PUT",
+        token,
+        body: JSON.stringify(editData),
+      });
+      if (res) {
+        setUserData(res);
+        setIsEditing(false);
+      }
+    } catch (err) {
+      alert("Failed to update profile");
+    }
+  };
+
+  // Handle Document Upload
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const { uploadToCloudinary } = await import("../lib/cloudinary");
+      const result = await uploadToCloudinary(file);
+      
+      const res = await apiFetch<any>(`/api/users/documents`, {
+        method: "POST",
+        token,
+        body: JSON.stringify({
+          name: file.name.split('.')[0],
+          url: result.secureUrl,
+        }),
+      });
+      
+      if (res) {
+        setUserData(res);
+      }
+    } catch (err) {
+      alert("Upload failed. Please check your Cloudinary connection.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Load applications from API
   useEffect(() => {
     if (!user) return;
@@ -213,18 +291,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#F7F3EE] flex">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-60 flex-shrink-0 bg-[#1A0A02] flex-col fixed top-0 left-0 h-screen">
-        {/* Logo */}
-        <div className="px-4 py-4 border-b border-white/8">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#D4A857] to-[#A8742C] rounded-lg flex items-center justify-center">
-              <GraduationCap style={{ width: 16, height: 16, color: "#1A0A02" }} />
-            </div>
-            <div className="leading-none">
-              <span className="text-white text-xs block" style={{ fontWeight: 700 }}>BD Admission</span>
-              <span className="text-[#D4A857]/70 text-[10px]">Support System</span>
-            </div>
-          </Link>
-        </div>
+        {/* Sidebar Header Space */}
+        <div className="px-4 py-8 border-b border-white/5" />
         <SidebarContent />
       </aside>
 
@@ -236,14 +304,8 @@ export default function Dashboard() {
             <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 text-white/50 hover:text-white">
               <X style={{ width: 20, height: 20 }} />
             </button>
-            <div className="px-4 py-4 border-b border-white/8">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#D4A857] to-[#A8742C] rounded-lg flex items-center justify-center">
-                  <GraduationCap style={{ width: 16, height: 16, color: "#1A0A02" }} />
-                </div>
-                <span className="text-white text-sm" style={{ fontWeight: 700 }}>BD Admission</span>
-              </div>
-            </div>
+            {/* Mobile Sidebar Space */}
+            <div className="px-4 py-8 border-b border-white/5" />
             <SidebarContent />
           </div>
         </div>
@@ -490,23 +552,29 @@ export default function Dashboard() {
                 </Link>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
-                {savedUniversities.map((uni, i) => (
-                  <motion.div key={uni.name} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                    <div className="bg-white border border-[#E8D5B7]/60 rounded-2xl p-4 flex items-center gap-4">
-                      <div className="w-11 h-11 bg-gradient-to-br from-[#3B1A0A] to-[#6B3A1F] rounded-xl flex items-center justify-center flex-shrink-0">
-                        <GraduationCap style={{ width: 18, height: 18, color: "#D4A857" }} />
+                {savedUnis.length === 0 ? (
+                  <div className="col-span-2 py-10 text-center bg-white border border-dashed border-[#E8D5B7] rounded-2xl">
+                    <p className="text-[#6B3A1F]/50 text-sm">No universities saved yet.</p>
+                  </div>
+                ) : (
+                  savedUnis.map((uni, i) => (
+                    <motion.div key={uni._id || i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                      <div className="bg-white border border-[#E8D5B7]/60 rounded-2xl p-4 flex items-center gap-4">
+                        <div className="w-11 h-11 bg-gradient-to-br from-[#3B1A0A] to-[#6B3A1F] rounded-xl flex items-center justify-center flex-shrink-0">
+                          <GraduationCap style={{ width: 18, height: 18, color: "#D4A857" }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[#1A0A02] text-sm truncate" style={{ fontWeight: 600 }}>{uni.name}</p>
+                          <p className="text-[#6B3A1F]/55 text-xs">{uni.city} · {uni.type}</p>
+                          <p className="text-[#C8860A] text-xs mt-0.5" style={{ fontWeight: 600 }}>{uni.tuitionMin || "N/A"}</p>
+                        </div>
+                        <Link to={`/universities`} className="text-[#D4A857]/60 hover:text-[#D4A857] transition-colors">
+                          <ChevronRight style={{ width: 18, height: 18 }} />
+                        </Link>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[#1A0A02] text-sm truncate" style={{ fontWeight: 600 }}>{uni.name}</p>
-                        <p className="text-[#6B3A1F]/55 text-xs">{uni.city} · {uni.type}</p>
-                        <p className="text-[#C8860A] text-xs mt-0.5" style={{ fontWeight: 600 }}>{uni.fee}</p>
-                      </div>
-                      <Link to="/universities" className="text-[#D4A857]/60 hover:text-[#D4A857] transition-colors">
-                        <ChevronRight style={{ width: 18, height: 18 }} />
-                      </Link>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))
+                )}
               </div>
             </motion.div>
           )}
@@ -551,36 +619,36 @@ export default function Dashboard() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex items-center justify-between mb-5">
                 <h1 className="text-[#1A0A02]" style={{ fontSize: "1.4rem", fontWeight: 700 }}>My Documents</h1>
-                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4A857] to-[#C8860A] text-[#1A0A02] rounded-xl text-sm hover:opacity-90" style={{ fontWeight: 600 }}>
-                  <Upload style={{ width: 14, height: 14 }} />
-                  Upload
-                </button>
+                <label className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4A857] to-[#C8860A] text-[#1A0A02] rounded-xl text-sm hover:opacity-90 cursor-pointer transition-all" style={{ fontWeight: 600 }}>
+                  {isUploading ? <Clock className="w-4 h-4 animate-spin" /> : <Upload style={{ width: 14, height: 14 }} />}
+                  {isUploading ? "Uploading..." : "Upload"}
+                  <input type="file" className="hidden" onChange={handleDocumentUpload} disabled={isUploading} />
+                </label>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
-                {[
-                  { name: "SSC Marksheet", status: "Verified", date: "Mar 15, 2026" },
-                  { name: "HSC Marksheet", status: "Verified", date: "Mar 15, 2026" },
-                  { name: "SSC Certificate", status: "Verified", date: "Mar 16, 2026" },
-                  { name: "HSC Certificate", status: "Pending", date: "Uploaded Mar 16" },
-                  { name: "National ID Card", status: "Verified", date: "Mar 15, 2026" },
-                  { name: "Testimonial", status: "Missing", date: "Not uploaded" },
-                  { name: "Passport Photo (×4)", status: "Verified", date: "Mar 15, 2026" },
-                ].map(({ name, status, date }) => (
-                  <div key={name} className="bg-white border border-[#E8D5B7]/60 rounded-xl p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 bg-[#D4A857]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText style={{ width: 16, height: 16, color: "#C8860A" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#1A0A02] text-sm truncate" style={{ fontWeight: 600 }}>{name}</p>
-                      <p className="text-[#6B3A1F]/45 text-xs">{date}</p>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${
-                      status === "Verified" ? "bg-green-50 text-green-700 border border-green-200"
-                      : status === "Pending" ? "bg-amber-50 text-amber-700 border border-amber-200"
-                      : "bg-red-50 text-red-600 border border-red-200"
-                    }`}>{status}</span>
+                {(!userData?.documents || userData.documents.length === 0) ? (
+                  <div className="col-span-2 py-12 text-center bg-white border border-dashed border-[#E8D5B7] rounded-2xl">
+                    <FileText className="w-10 h-10 text-[#D4A857]/20 mx-auto mb-2" />
+                    <p className="text-[#6B3A1F]/50 text-sm">No documents uploaded yet.</p>
                   </div>
-                ))}
+                ) : (
+                  userData.documents.map((doc: any, i: number) => (
+                    <div key={i} className="bg-white border border-[#E8D5B7]/60 rounded-xl p-4 flex items-center gap-3">
+                      <div className="w-9 h-9 bg-[#D4A857]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText style={{ width: 16, height: 16, color: "#C8860A" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[#1A0A02] text-sm truncate" style={{ fontWeight: 600 }}>{doc.name}</p>
+                        <p className="text-[#6B3A1F]/45 text-xs">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                      </div>
+                      <a href={doc.url} target="_blank" rel="noreferrer" className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${
+                        doc.status === "Verified" ? "bg-green-50 text-green-700 border border-green-200"
+                        : doc.status === "Pending" ? "bg-amber-50 text-amber-700 border border-amber-200"
+                        : "bg-red-50 text-red-600 border border-red-200"
+                      }`}>{doc.status}</a>
+                    </div>
+                  ))
+                )}
               </div>
             </motion.div>
           )}
@@ -601,32 +669,120 @@ export default function Dashboard() {
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star key={s} style={{ width: 14, height: 14, color: "#D4A857", fill: "#D4A857" }} />
                       ))}
-                      <span className="text-[#6B3A1F]/55 text-xs ml-1">Premium</span>
+                      <span className="text-[#6B3A1F]/55 text-xs ml-1">Premium Member</span>
                     </div>
-                    <button className="w-full py-2 border border-[#D4A857]/30 text-[#C8860A] rounded-xl text-sm hover:bg-[#D4A857]/10 transition-all">
-                      Edit Profile
-                    </button>
+                    {!isEditing ? (
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full py-2.5 bg-[#1A0A02] text-[#D4A857] rounded-xl text-sm font-bold hover:bg-[#1A0A02]/90 transition-all border border-[#D4A857]/20"
+                      >
+                        Edit Profile
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => setIsEditing(false)}
+                        className="w-full py-2.5 border border-gray-200 text-gray-500 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="md:col-span-2">
-                  <div className="bg-white border border-[#E8D5B7]/60 rounded-2xl p-5">
-                    <h3 className="text-[#1A0A02] text-sm mb-5" style={{ fontWeight: 600 }}>Personal Information</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-0">
-                      {[
-                        { label: "Full Name", value: user.name },
-                        { label: "Phone", value: user.phone },
-                        { label: "Email", value: user.email },
-                        { label: "Student ID", value: user.studentId },
-                        { label: "SSC GPA", value: user.sscGpa || "Not added" },
-                        { label: "HSC GPA", value: user.hscGpa || "Not added" },
-                        { label: "Preferred Subject", value: user.subject || "Not selected" },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="py-3 border-b border-[#E8D5B7]/30">
-                          <p className="text-[#6B3A1F]/45 text-xs mb-0.5">{label}</p>
-                          <p className="text-[#1A0A02] text-sm">{value}</p>
-                        </div>
-                      ))}
+                  <div className="bg-white border border-[#E8D5B7]/60 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-[#1A0A02] text-sm" style={{ fontWeight: 700 }}>Personal & Academic Details</h3>
+                      {isEditing && <span className="text-[10px] text-[#D4A857] font-bold uppercase tracking-widest animate-pulse">Editing Mode</span>}
                     </div>
+
+                    <form onSubmit={handleProfileSave}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">Full Name</label>
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              value={editData.name || ""} 
+                              onChange={(e) => setEditData({...editData, name: e.target.value})}
+                              className="w-full bg-[#FAFAFA] border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-[#D4A857] outline-none" 
+                            />
+                          ) : (
+                            <p className="text-[#1A0A02] text-sm font-medium">{userData?.name}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">Phone Number</label>
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              value={editData.phone || ""} 
+                              onChange={(e) => setEditData({...editData, phone: e.target.value})}
+                              className="w-full bg-[#FAFAFA] border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-[#D4A857] outline-none" 
+                            />
+                          ) : (
+                            <p className="text-[#1A0A02] text-sm font-medium">{userData?.phone}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">Email (ReadOnly)</label>
+                          <p className="text-[#1A0A02]/40 text-sm font-medium">{userData?.email}</p>
+                        </div>
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">Student ID</label>
+                          <p className="text-[#D4A857] text-sm font-bold">{userData?.studentId}</p>
+                        </div>
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">SSC GPA</label>
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              value={editData.sscGpa || ""} 
+                              onChange={(e) => setEditData({...editData, sscGpa: e.target.value})}
+                              className="w-full bg-[#FAFAFA] border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-[#D4A857] outline-none" 
+                            />
+                          ) : (
+                            <p className="text-[#1A0A02] text-sm font-medium">{userData?.sscGpa || "Not added"}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">HSC GPA</label>
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              value={editData.hscGpa || ""} 
+                              onChange={(e) => setEditData({...editData, hscGpa: e.target.value})}
+                              className="w-full bg-[#FAFAFA] border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-[#D4A857] outline-none" 
+                            />
+                          ) : (
+                            <p className="text-[#1A0A02] text-sm font-medium">{userData?.hscGpa || "Not added"}</p>
+                          )}
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="text-[#6B3A1F]/45 text-[10px] uppercase font-bold mb-1.5 block">Preferred Subject</label>
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              value={editData.subject || ""} 
+                              onChange={(e) => setEditData({...editData, subject: e.target.value})}
+                              className="w-full bg-[#FAFAFA] border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:ring-1 focus:ring-[#D4A857] outline-none" 
+                            />
+                          ) : (
+                            <p className="text-[#1A0A02] text-sm font-medium">{userData?.subject || "Not selected"}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {isEditing && (
+                        <div className="mt-8 flex gap-3">
+                          <button 
+                            type="submit"
+                            className="flex-1 py-3 bg-[#1A0A02] text-[#D4A857] rounded-xl text-sm font-bold shadow-lg shadow-[#1A0A02]/10 hover:opacity-95 active:scale-[0.98] transition-all"
+                          >
+                            Save Profile Changes
+                          </button>
+                        </div>
+                      )}
+                    </form>
                   </div>
                 </div>
               </div>

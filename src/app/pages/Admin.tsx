@@ -554,6 +554,8 @@ function StudentsSection({
   setStudents: Function;
   onDeleteStudent: (item: any) => Promise<void>;
 }) {
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+
   const handleDelete = async (student: any) => {
     if (!window.confirm("Delete this student account?")) return;
     try {
@@ -576,6 +578,7 @@ function StudentsSection({
               <th className="px-6 py-4">Student</th>
               <th className="px-6 py-4">Academic Details</th>
               <th className="px-6 py-4">Contact</th>
+              <th className="px-6 py-4 text-center">Docs</th>
               <th className="px-6 py-4">Actions</th>
             </tr>
           </thead>
@@ -583,7 +586,7 @@ function StudentsSection({
             {students.map((s, i) => (
               <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#1A0A02] rounded-2xl flex items-center justify-center text-[#D4A857] font-bold text-xs uppercase">{s.name[0]}</div>
+                  <div className="w-10 h-10 bg-[#1A0A02] rounded-2xl flex items-center justify-center text-[#D4A857] font-bold text-xs uppercase">{s.name ? s.name[0] : "S"}</div>
                   <div>
                     <p className="text-sm font-bold text-gray-800">{s.name}</p>
                     <p className="text-[10px] text-[#D4A857] font-bold">{s.studentId}</p>
@@ -593,14 +596,92 @@ function StudentsSection({
                   <span className="text-xs text-gray-600">SSC: {s.sscGpa || "N/A"} | HSC: {s.hscGpa || "N/A"}</span>
                 </td>
                 <td className="px-6 py-4 text-xs text-gray-500">{s.email}<br />{s.phone}</td>
+                <td className="px-6 py-4 text-center">
+                  <button 
+                    onClick={() => setSelectedStudent(s)}
+                    className="p-2.5 bg-[#D4A857]/10 text-[#A8742C] rounded-xl hover:bg-[#D4A857]/20 transition-all relative"
+                  >
+                    <FileText className="w-4 h-4" />
+                    {s.documents?.length > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] flex items-center justify-center rounded-full border-2 border-white">
+                        {s.documents.length}
+                      </span>
+                    )}
+                  </button>
+                </td>
                 <td className="px-6 py-4">
-                  <button onClick={() => void handleDelete(s)} className="p-2 hover:bg-red-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4 text-red-300" /></button>
+                  <div className="flex gap-2">
+                    <button onClick={() => void handleDelete(s)} className="p-2 hover:bg-red-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4 text-red-300" /></button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Document Viewer Modal */}
+      <AnimatePresence>
+        {selectedStudent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedStudent(null)} className="absolute inset-0 bg-[#1A0A02]/60 backdrop-blur-sm" />
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }} 
+               animate={{ opacity: 1, scale: 1 }} 
+               exit={{ opacity: 0, scale: 0.95 }} 
+               className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-gray-800">Student Documents</h3>
+                  <p className="text-xs text-gray-400">{selectedStudent.name} ({selectedStudent.studentId})</p>
+                </div>
+                <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
+              </div>
+              <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
+                {(!selectedStudent.documents || selectedStudent.documents.length === 0) ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">No documents uploaded</p>
+                  </div>
+                ) : (
+                  selectedStudent.documents.map((doc: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-[#C8860A]" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{doc.name}</p>
+                          <p className="text-[10px] text-gray-400">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <a 
+                           href={doc.url} 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="p-2 hover:bg-white rounded-xl text-gray-400 hover:text-[#D4A857] transition-all"
+                         >
+                           <Eye className="w-4 h-4" />
+                         </a>
+                         <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+                           doc.status === "Verified" ? "bg-green-100 text-green-700" :
+                           doc.status === "Pending" ? "bg-amber-100 text-amber-700" :
+                           "bg-red-100 text-red-700"
+                         }`}>{doc.status}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="p-6 bg-gray-50 text-center">
+                <button onClick={() => setSelectedStudent(null)} className="text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">Close Viewer</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
