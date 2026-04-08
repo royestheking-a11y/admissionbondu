@@ -1,8 +1,15 @@
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:4000";
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:4000";
 
 export function getApiUrl(path: string) {
   if (path.startsWith("http")) return path;
-  return `${API_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+  
+  // Ensure we don't end up with /api/api/
+  let cleanPath = path.startsWith("/") ? path : `/${path}`;
+  if (API_URL.endsWith("/api") && cleanPath.startsWith("/api/")) {
+    cleanPath = cleanPath.substring(4);
+  }
+  
+  return `${API_URL}${cleanPath}`;
 }
 
 export function getStoredToken() {

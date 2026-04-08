@@ -39,18 +39,28 @@ async function main() {
 
   const app = express();
   app.use(morgan("dev"));
-  const allowedOrigins = env.CORS_ORIGIN === "*" ? "*" : env.CORS_ORIGIN.split(",").map((s) => s.trim()).filter(Boolean);
+  const allowedOrigins = env.CORS_ORIGIN === "*" ? "*" : [
+    "http://localhost:5173",
+    "https://admissionbondu.me",
+    "https://www.admissionbondu.me",
+    ...env.CORS_ORIGIN.split(",").map((s) => s.trim()).filter(Boolean)
+  ];
+
   app.use(
     cors({
-      origin:
-        allowedOrigins === "*"
-          ? true
-          : (origin, cb) => {
-              // Allow non-browser requests (no origin) and allowlisted origins.
-              if (!origin) return cb(null, true);
-              if ((allowedOrigins as string[]).includes(origin)) return cb(null, true);
-              return cb(new Error("CORS blocked"));
-            },
+      origin: (origin, cb) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return cb(null, true);
+        
+        if (allowedOrigins === "*" || (allowedOrigins as string[]).includes(origin)) {
+          return cb(null, true);
+        }
+        
+        // Help debugging CORS in Render logs
+        // eslint-disable-next-line no-console
+        console.warn(`CORS blocked for origin: ${origin}. Update CORS_ORIGIN to allow it.`);
+        return cb(new Error(`CORS blocked for ${origin}`));
+      },
       credentials: true,
     })
   );
