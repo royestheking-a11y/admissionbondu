@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:4000";
 
 export function getApiUrl(path: string) {
