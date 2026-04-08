@@ -7,6 +7,7 @@ const EnvSchema = z.object({
   // Comma-separated list, or "*" to allow all.
   CORS_ORIGIN: z.string().min(1).default("http://localhost:5173"),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  BACKEND_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
