@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { ApplicationModel } from "../models/Application";
-import { adminOnly, authRequired } from "../middleware/auth";
+import { ApplicationModel } from "../models/Application.js";
+import { adminOnly, authRequired } from "../middleware/auth.js";
 
 const ApplicationCreateSchema = z.object({
   studentName: z.string().min(1),

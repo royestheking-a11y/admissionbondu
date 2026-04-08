@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { NoticeModel } from "../models/Notice";
-import { adminOnly, authRequired } from "../middleware/auth";
+import { NoticeModel } from "../models/Notice.js";
+import { adminOnly, authRequired } from "../middleware/auth.js";
 
 const NoticeUpsertSchema = z.object({
   title: z.string().min(1),

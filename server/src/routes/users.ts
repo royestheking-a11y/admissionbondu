@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { UserModel } from "../models/User";
-import { adminOnly, authRequired } from "../middleware/auth";
+import { UserModel } from "../models/User.js";
+import { adminOnly, authRequired } from "../middleware/auth.js";
 
 export function usersRouter(jwtSecret: string) {
   const router = Router();

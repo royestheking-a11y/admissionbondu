@@ -1,8 +1,8 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { UserModel } from "../models/User";
-import { signJwt } from "../auth/jwt";
+import { UserModel } from "../models/User.js";
+import { signJwt } from "../auth/jwt.js";
 import { OAuth2Client } from "google-auth-library";
 
 export function authRouter(jwtSecret: string, googleClientId?: string) {

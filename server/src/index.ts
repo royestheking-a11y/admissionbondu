@@ -2,15 +2,15 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import { getEnv } from "./env";
-import { connectDb } from "./db";
-import { authRouter } from "./routes/auth";
-import { universitiesRouter } from "./routes/universities";
-import { noticesRouter } from "./routes/notices";
-import { applicationsRouter } from "./routes/applications";
-import { accommodationRouter } from "./routes/accommodation";
-import { usersRouter } from "./routes/users";
-import { medicalRouter } from "./routes/medical";
+import { getEnv } from "./env.js";
+import { connectDb } from "./db.js";
+import { authRouter } from "./routes/auth.js";
+import { universitiesRouter } from "./routes/universities.js";
+import { noticesRouter } from "./routes/notices.js";
+import { applicationsRouter } from "./routes/applications.js";
+import { accommodationRouter } from "./routes/accommodation.js";
+import { usersRouter } from "./routes/users.js";
+import { medicalRouter } from "./routes/medical.js";
 
 const env = getEnv();
 

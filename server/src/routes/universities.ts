@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { UniversityModel } from "../models/University";
-import { adminOnly, authRequired } from "../middleware/auth";
+import { UniversityModel } from "../models/University.js";
+import { adminOnly, authRequired } from "../middleware/auth.js";
 
 const UniversityUpsertSchema = z.object({
   name: z.string().min(1),

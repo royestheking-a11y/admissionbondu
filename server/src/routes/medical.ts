@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { UniversityModel } from "../models/University";
+import { UniversityModel } from "../models/University.js";
 
 export function medicalRouter() {
   const router = Router();

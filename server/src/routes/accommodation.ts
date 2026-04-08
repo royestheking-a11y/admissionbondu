@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { AccommodationModel } from "../models/Accommodation";
-import { adminOnly, authRequired } from "../middleware/auth";
+import { AccommodationModel } from "../models/Accommodation.js";
+import { adminOnly, authRequired } from "../middleware/auth.js";
 
 const AccommodationUpsertSchema = z.object({
   cityData: z.record(z.any()),

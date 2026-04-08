@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import type { CloudinaryMedia } from "./University";
+import type { CloudinaryMedia } from "./University.js";
 
 export interface NoticeDoc {
   legacyId?: number;
