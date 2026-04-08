@@ -168,7 +168,7 @@ export default function Home() {
             </p>
 
             {/* Redesigned Search Box / Filters */}
-            <div className="w-full max-w-4xl mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden mb-12">
+            <div className="w-full max-w-4xl mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden mb-12">
               <div className="flex flex-col md:flex-row items-stretch gap-2">
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
                   <div className="relative group">
@@ -176,7 +176,7 @@ export default function Home() {
                     <select
                       value={searchSubject}
                       onChange={(e) => setSearchSubject(e.target.value)}
-                      className="w-full bg-white/10 hover:bg-white/15 border border-white/10 group-focus-within:border-[#D4A857]/40 rounded-2xl pl-12 pr-4 py-4 text-white text-base appearance-none focus:outline-none transition-all cursor-pointer"
+                      className="w-full bg-white/10 hover:bg-white/15 border border-white/10 group-focus-within:border-[#D4A857]/40 rounded-xl pl-12 pr-4 py-4 text-white text-base appearance-none focus:outline-none transition-all cursor-pointer"
                     >
                       <option value="" className="bg-[#1A0A02]">Any Subject</option>
                       {["CSE", "EEE", "BBA", "English", "Pharmacy", "Architecture", "Law", "MBBS", "Civil"].map(s => (
@@ -189,7 +189,7 @@ export default function Home() {
                     <select
                       value={searchCity}
                       onChange={(e) => setSearchCity(e.target.value)}
-                      className="w-full bg-white/10 hover:bg-white/15 border border-white/10 group-focus-within:border-[#D4A857]/40 rounded-2xl pl-12 pr-4 py-4 text-white text-base appearance-none focus:outline-none transition-all cursor-pointer"
+                      className="w-full bg-white/10 hover:bg-white/15 border border-white/10 group-focus-within:border-[#D4A857]/40 rounded-xl pl-12 pr-4 py-4 text-white text-base appearance-none focus:outline-none transition-all cursor-pointer"
                     >
                       <option value="" className="bg-[#1A0A02]">Any City</option>
                       {["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna", "Barisal", "Rangpur", "Mymensingh"].map(c => (
@@ -200,7 +200,7 @@ export default function Home() {
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="bg-gradient-to-r from-[#D4A857] to-[#C8860A] text-[#1A0A02] px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:translate-y-[-2px] hover:shadow-xl hover:shadow-[#D4A857]/40 active:translate-y-[0] transition-all m-2"
+                  className="bg-gradient-to-r from-[#D4A857] to-[#C8860A] text-[#1A0A02] px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:translate-y-[-2px] hover:shadow-xl hover:shadow-[#D4A857]/40 active:translate-y-[0] transition-all m-2"
                 >
                   <Search className="w-5 h-5" />
                   <span className="whitespace-nowrap">Find University</span>
