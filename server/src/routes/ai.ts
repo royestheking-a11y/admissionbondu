@@ -14,7 +14,6 @@ export function aiRouter(geminiApiKey?: string) {
   }
 
   const genAI = new GoogleGenerativeAI(geminiApiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   router.post("/chat", async (req, res) => {
     try {
@@ -76,13 +75,16 @@ ROLES:
 4. Use golden emojis (✨, 🎓) to match the premium theme.
 5. Format responses with clear headers and bullet points.`;
 
-      const chat = model.startChat({
-        history: [
-          ...(history || [])
-        ],
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: systemPrompt
       });
 
-      const result = await chat.sendMessage(systemPrompt + "\n\nUser request: " + message);
+      const chat = model.startChat({
+        history: history || [],
+      });
+
+      const result = await chat.sendMessage(message);
       
       const response = await result.response;
       const text = response.text();
@@ -90,6 +92,14 @@ ROLES:
       res.json({ reply: text });
     } catch (error: any) {
       console.error("AI Chat Error:", error);
+      
+      // Handle invalid API key specifically
+      if (error.message?.includes("API_KEY_INVALID")) {
+        return res.status(401).json({ 
+          error: "Invalid API Key. Please regenerate a key at AI Studio and update Render." 
+        });
+      }
+
       res.status(500).json({ error: "Internal server error" });
     }
   });
