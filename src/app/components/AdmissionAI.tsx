@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, X, Send, Bot, Sparkles, Terminal } from "lucide-react";
+import { MessageSquare, X, Send, Bot, Sparkles, Terminal, GraduationCap } from "lucide-react";
 import { apiFetch } from "../lib/api";
 
 interface Message {

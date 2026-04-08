@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { UniversityModel } from "../models/University.ts";
-import { NoticeModel } from "../models/Notice.ts";
+import { UniversityModel } from "../models/University.js";
+import { NoticeModel } from "../models/Notice.js";
 
 export function aiRouter(geminiApiKey?: string) {
   const router = Router();
