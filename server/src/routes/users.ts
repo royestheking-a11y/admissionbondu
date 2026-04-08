@@ -28,7 +28,7 @@ export function usersRouter(jwtSecret: string) {
     const user = await UserModel.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const index = user.savedUniversities.indexOf(uniId as any);
+    const index = user.savedUniversities.findIndex((id: any) => id.toString() === uniId);
     if (index > -1) {
       user.savedUniversities.splice(index, 1);
     } else {

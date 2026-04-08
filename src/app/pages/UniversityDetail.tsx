@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   MapPin, Star, GraduationCap, ChevronRight, Calendar, Users,
   Banknote, Clock, Award, BookOpen, Globe, CheckCircle, ArrowRight, Home,
-  Info, Calculator, Receipt, ShieldCheck, Heart
+  Info, Calculator, Receipt, ShieldCheck, Bookmark
 } from "lucide-react";
 import { universities } from "../data/universities";
 import { apiFetch } from "../lib/api";
@@ -48,7 +48,11 @@ export default function UniversityDetail() {
     if (isLoggedIn && token && id) {
       apiFetch<any>("/api/users/me", { token }).then(u => {
         if (u && Array.isArray(u.savedUniversities)) {
-          const found = u.savedUniversities.some((s: any) => (s._id || s) === id);
+          // Compare using string IDs
+          const found = u.savedUniversities.some((s: any) => {
+            const sid = typeof s === "string" ? s : (s._id || s.id);
+            return sid?.toString() === id?.toString();
+          });
           setIsBookmarked(found);
         }
       }).catch(() => {});
@@ -172,8 +176,9 @@ export default function UniversityDetail() {
                   <button 
                     onClick={toggleSave}
                     className={`p-2 rounded-xl transition-all ${isBookmarked ? "bg-[#D4A857] text-[#1A0A02]" : "bg-white/10 text-white hover:bg-white/20"}`}
+                    title={isBookmarked ? "Unsave University" : "Save University"}
                   >
-                    <Heart className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
+                    <Bookmark className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
                   </button>
                 </div>
               </div>
