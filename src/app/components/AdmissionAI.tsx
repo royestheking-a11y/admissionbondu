@@ -70,6 +70,9 @@ export function AdmissionAI() {
         }),
       });
 
+      // Natural delay so user can see "Bondhu is thinking"
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       setMessages((prev) => [...prev, { role: "model", content: data.reply }]);
     } catch (error: any) {
       let errorMsg = "I'm sorry, I'm having a bit of trouble connecting to my brain right now. Please try again later!";
@@ -158,12 +161,16 @@ export function AdmissionAI() {
               ))}
               
               {isLoading && (
-                <div className="flex justify-start">
+                <div className="flex justify-start items-end gap-2">
+                  <div className="h-8 w-8 rounded-xl bg-[#D4A857]/10 flex items-center justify-center border border-[#D4A857]/20">
+                    <GraduationCap size={16} className="text-[#D4A857]" />
+                  </div>
                   <div className="bg-white/5 border border-[#D4A857]/10 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-                    <div className="flex gap-1.5">
-                      <div className="h-1.5 w-1.5 bg-[#D4A857]/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <div className="h-1.5 w-1.5 bg-[#D4A857]/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <div className="h-1.5 w-1.5 bg-[#D4A857]/40 rounded-full animate-bounce" />
+                    <div className="flex gap-1.5 items-center">
+                      <div className="h-1.5 w-1.5 bg-[#D4A857] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <div className="h-1.5 w-1.5 bg-[#D4A857] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <div className="h-1.5 w-1.5 bg-[#D4A857] rounded-full animate-bounce" />
+                      <span className="text-[10px] ml-2 text-[#D4A857]/60 font-bold uppercase tracking-widest">Bondhu is thinking</span>
                     </div>
                   </div>
                 </div>
