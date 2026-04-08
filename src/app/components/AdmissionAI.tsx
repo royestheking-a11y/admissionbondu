@@ -1,25 +1,51 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MessageSquare, X, Send, Bot, Sparkles, Terminal, GraduationCap } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 
 interface Message {
   role: "user" | "model";
   content: string;
 }
 
+// Helper component for typewriter effect
+function Typewriter({ text, onComplete }: { text: string; onComplete?: () => void }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText((prev) => prev + text[index]);
+        setIndex((prev) => prev + 1);
+      }, 15); // Adjust speed here
+      return () => clearTimeout(timeout);
+    } else {
+      onComplete?.();
+    }
+  }, [index, text, onComplete]);
+
+  return <p className="whitespace-pre-wrap leading-relaxed">{displayedText}</p>;
+}
+
 export function AdmissionAI() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -37,14 +63,22 @@ export function AdmissionAI() {
 
       const data = await apiFetch<{ reply: string }>("/ai/chat", {
         method: "POST",
-        body: JSON.stringify({ message: userMessage, history }),
+        body: JSON.stringify({ 
+          message: userMessage, 
+          history,
+          userName: user?.name 
+        }),
       });
 
       setMessages((prev) => [...prev, { role: "model", content: data.reply }]);
-    } catch (error) {
+    } catch (error: any) {
+      let errorMsg = "I'm sorry, I'm having a bit of trouble connecting to my brain right now. Please try again later!";
+      if (error.message?.includes("503")) {
+        errorMsg = "I'm nearly ready! ✨ Please ask your administrator to add the GEMINI_API_KEY so I can start helping you.";
+      }
       setMessages((prev) => [
         ...prev,
-        { role: "model", content: "I'm sorry, I'm having a bit of trouble connecting to my brain right now. Please try again later!" },
+        { role: "model", content: errorMsg },
       ]);
     } finally {
       setIsLoading(false);
@@ -97,8 +131,8 @@ export function AdmissionAI() {
                   >
                     <Sparkles className="text-[#D4A857]" size={28} />
                   </motion.div>
-                  <p className="text-sm font-bold text-white">Hello! I'm your Admission Bondhu</p>
-                  <p className="text-xs text-white/50 px-8 leading-relaxed">I have deep database knowledge about courses, tuition, and latest notices. How can I help?</p>
+                  <p className="text-sm font-bold text-white">Hello {user?.name ? user.name.split(" ")[0] : ""}! I'm your Admission Bondhu</p>
+                  <p className="text-xs text-white/50 px-8 leading-relaxed">I can answer info about universities, GPA, and notices. How can I help you today?</p>
                 </div>
               )}
               
@@ -114,7 +148,11 @@ export function AdmissionAI() {
                         : "bg-white/5 border border-[#D4A857]/10 text-white/90 rounded-tl-none leading-relaxed"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{m.content}</p>
+                    {m.role === "model" && i === messages.length - 1 && !isLoading ? (
+                      <Typewriter text={m.content} onComplete={scrollToBottom} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{m.content}</p>
+                    )}
                   </div>
                 </div>
               ))}

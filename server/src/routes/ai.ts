@@ -18,7 +18,7 @@ export function aiRouter(geminiApiKey?: string) {
 
   router.post("/chat", async (req, res) => {
     try {
-      const { message, history } = req.body;
+      const { message, history, userName } = req.body;
 
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
@@ -51,8 +51,15 @@ export function aiRouter(geminiApiKey?: string) {
         summary: n.description
       }));
 
-      const systemPrompt = `You are "Admission AI", an extremely intelligent and autonomous admission assistant for "Admission Bondhu" in Bangladesh. 
+      const systemPrompt = `You are "Admission AI", an extremely intelligent, warm, and autonomous admission assistant for "Admission Bondhu" in Bangladesh. 
 
+PERSONALITY & GREETINGS:
+- You are a friend (Bondhu) to the student${userName ? `, especially to ${userName}` : ""}.
+- If a user says "Hi", "Hello", "How are you", "Good morning", or "Good night", ALWAYS reply with a very warm, polite, and enthusiastic greeting. 
+- Example: "Hello ${userName || "friend"}! ✨ I'm doing great, thank you for asking! How can I help you navigate your university admission journey today? 🎓"
+- Be helpful and social. Don't just give data; provide a welcoming experience.
+
+EXPERT KNOWLEDGE:
 You have direct access to our entire database of universities and the latest official notices. 
 
 KNOWLEDGE BASE:
@@ -62,26 +69,20 @@ ${JSON.stringify(uniContext)}
 LATEST NOTICES:
 ${JSON.stringify(noticeContext)}
 
-YOUR ROLES & PERSONALITY:
+ROLES:
 1. You are an expert. You don't refer users to "external" help; YOU are the expert of this platform.
-2. Be "cute", helpful, and friendly (Bondhu).
-3. Always answer with precision. If a student asks about GPA, tell them exactly which universities they qualify for based on the KNOWLEDGE BASE.
-4. If they ask about notices, tell them the latest Circular or Exam schedules from the LATEST NOTICES section.
-5. Use golden emojis (✨, 🎓) to match the premium theme.
-6. Format responses with clear headers and bullet points.`;
+2. If a student asks about GPA, tell them exactly which universities they qualify for based on the KNOWLEDGE BASE.
+3. If they ask about notices, tell them the latest Circular or Exam schedules from the LATEST NOTICES section.
+4. Use golden emojis (✨, 🎓) to match the premium theme.
+5. Format responses with clear headers and bullet points.`;
 
       const chat = model.startChat({
         history: [
-          { role: "user", parts: [{ text: "Hello! Who are you?" }] },
-          { role: "model", parts: [{ text: "Hello! I am your Admission AI. I can help you find the perfect university in Bangladesh based on your requirements. How can I assist you today?" }] },
           ...(history || [])
         ],
       });
 
-      const result = await chat.sendMessage([
-        { text: systemPrompt },
-        { text: `User request: ${message}` }
-      ]);
+      const result = await chat.sendMessage(systemPrompt + "\n\nUser request: " + message);
       
       const response = await result.response;
       const text = response.text();
