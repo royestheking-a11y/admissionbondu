@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UniversityModel } from "../models/University.ts";
+import { NoticeModel } from "../models/Notice.ts";
 
 export function aiRouter(geminiApiKey?: string) {
   const router = Router();
@@ -23,10 +24,13 @@ export function aiRouter(geminiApiKey?: string) {
         return res.status(400).json({ error: "Message is required" });
       }
 
-      // Fetch all universities to provide as context
-      const universities = await UniversityModel.find({}).lean();
+      // Fetch all universities and notices to provide as context
+      const [universities, notices] = await Promise.all([
+        UniversityModel.find({}).lean(),
+        NoticeModel.find({}).sort({ createdAt: -1 }).limit(10).lean()
+      ]);
       
-      const context = universities.map(u => ({
+      const uniContext = universities.map(u => ({
         name: u.name,
         shortName: u.shortName,
         type: u.type,
@@ -40,17 +44,31 @@ export function aiRouter(geminiApiKey?: string) {
         details: u.description
       }));
 
-      const systemPrompt = `You are "Admission AI", a professional and friendly admission assistant for "Admission Bondhu" (an admission support platform in Bangladesh). 
-Your goal is to help students find the best universities based on their preferences, GPA, and budget.
-You have access to the following university database:
-${JSON.stringify(context)}
+      const noticeContext = notices.map(n => ({
+        title: n.title,
+        category: n.category,
+        date: n.date,
+        summary: n.description
+      }));
 
-Rules:
-1. Provide accurate information based on the database above.
-2. If data is missing, be honest and suggest visiting the university website.
-3. Keep your tone helpful, "cute" but premium, and professional.
-4. Use clear formatting (bullet points) for university comparisons.
-5. Focus on the user's specific needs (e.g., location, budget, GPA).`;
+      const systemPrompt = `You are "Admission AI", an extremely intelligent and autonomous admission assistant for "Admission Bondhu" in Bangladesh. 
+
+You have direct access to our entire database of universities and the latest official notices. 
+
+KNOWLEDGE BASE:
+UNIVERSITIES:
+${JSON.stringify(uniContext)}
+
+LATEST NOTICES:
+${JSON.stringify(noticeContext)}
+
+YOUR ROLES & PERSONALITY:
+1. You are an expert. You don't refer users to "external" help; YOU are the expert of this platform.
+2. Be "cute", helpful, and friendly (Bondhu).
+3. Always answer with precision. If a student asks about GPA, tell them exactly which universities they qualify for based on the KNOWLEDGE BASE.
+4. If they ask about notices, tell them the latest Circular or Exam schedules from the LATEST NOTICES section.
+5. Use golden emojis (✨, 🎓) to match the premium theme.
+6. Format responses with clear headers and bullet points.`;
 
       const chat = model.startChat({
         history: [
