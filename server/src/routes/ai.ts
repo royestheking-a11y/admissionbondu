@@ -1,19 +1,16 @@
 import { Router } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UniversityModel } from "../models/University.js";
 import { NoticeModel } from "../models/Notice.js";
 
-export function aiRouter(geminiApiKey?: string) {
+export function aiRouter(groqApiKey?: string) {
   const router = Router();
 
-  if (!geminiApiKey) {
+  if (!groqApiKey) {
     router.post("/chat", (_req, res) => {
-      res.status(503).json({ error: "AI service not configured" });
+      res.status(503).json({ error: "AI service not configured. Please add GROQ_API_KEY in Render." });
     });
     return router;
   }
-
-  const genAI = new GoogleGenerativeAI(geminiApiKey);
 
   router.post("/chat", async (req, res) => {
     try {
@@ -23,7 +20,7 @@ export function aiRouter(geminiApiKey?: string) {
         return res.status(400).json({ error: "Message is required" });
       }
 
-      // Fetch all universities and notices to provide as context
+      // Fetch context from database
       const [universities, notices] = await Promise.all([
         UniversityModel.find({}).lean(),
         NoticeModel.find({}).sort({ createdAt: -1 }).limit(10).lean()
@@ -31,91 +28,72 @@ export function aiRouter(geminiApiKey?: string) {
       
       const uniContext = universities.map(u => ({
         name: u.name,
-        shortName: u.shortName,
-        type: u.type,
-        city: u.city,
-        subjects: u.subjects,
-        tuition: `${u.tuitionMin} - ${u.tuitionMax}`,
-        admissionFee: u.admissionFee,
-        rating: u.rating,
-        website: u.website,
-        gpaMin: u.gpaMin,
-        details: u.description
+        details: `${u.type} in ${u.city}. Tuition: ${u.tuitionMin}-${u.tuitionMax}. GPA: ${u.gpaMin}. Subjects: ${u.subjects?.join(", ")}`
       }));
 
-      const noticeContext = notices.map(n => ({
-        title: n.title,
-        category: n.category,
-        date: n.date,
-        summary: n.description
-      }));
+      const noticeContext = notices.map(n => n.title);
 
-      const systemPrompt = `You are "Admission AI", an extremely intelligent, warm, and autonomous admission assistant for "Admission Bondhu" in Bangladesh. 
+      const systemPrompt = `You are "Admission AI Bondhu", the expert social assistant for the "Admission Bondhu" platform in Bangladesh.
 
-PERSONALITY & GREETINGS:
-- You are a friend (Bondhu) to the student${userName ? `, especially to ${userName}` : ""}.
-- If a user says "Hi", "Hello", "How are you", "Good morning", or "Good night", ALWAYS reply with a very warm, polite, and enthusiastic greeting. 
-- Example: "Hello ${userName || "friend"}! ✨ I'm doing great, thank you for asking! How can I help you navigate your university admission journey today? 🎓"
-- Be helpful and social. Don't just give data; provide a welcoming experience.
-
-EXPERT KNOWLEDGE:
-You have direct access to our entire database of universities and the latest official notices. 
+CONVERSATIONAL RULES:
+- If the user says "Hi", "Hello", "How are you", or "Good morning", ALWAYS reply with a very warm greeting: "Hello ${userName || "friend"}! ✨ I'm doing great, thank you! How can I help you with your university admissions journey today? 🎓"
+- Always be social first. If the user is just greeting, ask "How can I help you?".
+- Be polite, enthusiastic, and use emojis to stay premium.
 
 KNOWLEDGE BASE:
-UNIVERSITIES:
-${JSON.stringify(uniContext)}
+UNIVERSITY DATA: ${JSON.stringify(uniContext)}
+LATEST NOTICES: ${noticeContext.join(", ")}
 
-LATEST NOTICES:
-${JSON.stringify(noticeContext)}
+ADMISSION EXPERTISE:
+- When asked about admission, analyze the GPA and Tuition in the data above.
+- Suggest the best universities from the list. 
+- Use bold text for **University Names**.
+- You are an expert of THIS platform. Do not suggest external websites.`;
 
-ROLES:
-1. You are an expert. You don't refer users to "external" help; YOU are the expert of this platform.
-2. If a student asks about GPA, tell them exactly which universities they qualify for based on the KNOWLEDGE BASE.
-3. If they ask about notices, tell them the latest Circular or Exam schedules from the LATEST NOTICES section.
-4. Use golden emojis (✨, 🎓) to match the premium theme.
-5. Format responses with clear headers and bullet points.`;
+      // Transform history to OpenAI/Groq format
+      const formattedHistory = (history || []).map((h: any) => ({
+        role: h.role === "user" ? "user" : "assistant",
+        content: h.parts[0].text
+      }));
 
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.0-flash",
-        systemInstruction: systemPrompt
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...formattedHistory,
+        { role: "user", content: message }
+      ];
+
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages,
+          temperature: 0.7,
+          max_tokens: 1024
+        })
       });
 
-      const chat = model.startChat({
-        history: history || [],
-      });
-
-      const result = await chat.sendMessage(message);
-      
-      const response = await result.response;
-      const text = response.text();
-
-      if (!text) {
-        throw new Error("Empty response from AI");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Groq API Error: ${errorData.error?.message || response.statusText}`);
       }
 
-      res.json({ reply: text });
+      const data = await response.json();
+      const reply = data.choices[0].message.content;
+
+      res.json({ reply });
     } catch (error: any) {
-      console.error("AI Chat Error:", error);
+      console.error("Groq AI Error:", error);
       
-      // Handle invalid API key
-      if (error.message?.includes("API_KEY_INVALID")) {
-        return res.status(401).json({ 
-          error: "Invalid API Key. Please regenerate a key at AI Studio and update Render." 
-        });
+      if (error.message?.includes("401")) {
+        return res.status(401).json({ error: "Invalid Groq API Key. Please update Render env." });
       }
-
-      // Handle Quota Exceeded
-      if (error.message?.includes("429") || error.message?.includes("QUOTA_EXHAUSTED")) {
-        return res.status(429).json({ 
-          error: "Quota reached! ✨ Please enable the Generative Language API in Google Cloud or check your AI Studio limits." 
-        });
-      }
-
-      // Handle Safety block
-      if (error.message?.includes("SAFETY")) {
-        return res.status(400).json({ 
-          error: "Bondhu covers only admission topics. Let's keep it safe! 🎓" 
-        });
+      
+      if (error.message?.includes("429")) {
+        return res.status(429).json({ error: "Groq speed limit reached. Please wait a moment! ✨" });
       }
 
       res.status(500).json({ error: "Internal server error" });

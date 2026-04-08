@@ -75,7 +75,7 @@ async function main() {
   app.use("/api/accommodation", accommodationRouter(env.JWT_SECRET));
   app.use("/api/users", usersRouter(env.JWT_SECRET));
   app.use("/api/medical", medicalRouter());
-  app.use("/api/ai", aiRouter(env.GEMINI_API_KEY));
+  app.use("/api/ai", aiRouter(env.GROQ_API_KEY));
 
   app.listen(env.PORT, () => {
     // eslint-disable-next-line no-console
