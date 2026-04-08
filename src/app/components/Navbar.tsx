@@ -65,9 +65,9 @@ export function Navbar() {
             <div className="w-8 h-8 bg-gradient-to-br from-[#D4A857] to-[#A8742C] rounded-lg flex items-center justify-center">
               <GraduationCap className="w-4.5 h-4.5 text-[#1A0A02]" style={{ width: 18, height: 18 }} />
             </div>
-            <div className="leading-none">
-              <span className="text-white text-sm block" style={{ fontWeight: 700, letterSpacing: "-0.3px" }}>Admission</span>
-              <span className="text-[#D4A857]/80 text-[10px]">Bondu</span>
+            <div className="leading-tight">
+              <span className="text-white text-base block" style={{ fontWeight: 800, letterSpacing: "-0.4px" }}>Admission</span>
+              <span className="text-[#D4A857] text-xs font-bold tracking-wider uppercase">Bondu</span>
             </div>
           </Link>
 

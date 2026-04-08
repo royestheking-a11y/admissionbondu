@@ -101,7 +101,7 @@ export function AdmissionAI() {
             {/* Header */}
             <div className="flex items-center justify-between bg-[#1E0C03] p-4 text-white border-b border-[#D4A857]/10">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#D4A857] to-[#A8742C] shadow-lg shadow-[#D4A857]/10">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#D4A857] to-[#A8742C] shadow-lg shadow-[#D4A857]/10">
                   <GraduationCap size={20} className="text-[#1A0A02]" />
                 </div>
                 <div>
@@ -130,7 +130,7 @@ export function AdmissionAI() {
                   <motion.div 
                     animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 3, repeat: Infinity }}
-                    className="h-14 w-14 rounded-2xl bg-[#D4A857]/10 flex items-center justify-center mb-2 border border-[#D4A857]/20"
+                    className="h-14 w-14 rounded-full bg-[#D4A857]/10 flex items-center justify-center mb-2 border border-[#D4A857]/20"
                   >
                     <Sparkles className="text-[#D4A857]" size={28} />
                   </motion.div>
@@ -162,7 +162,7 @@ export function AdmissionAI() {
               
               {isLoading && (
                 <div className="flex justify-start items-end gap-2">
-                  <div className="h-8 w-8 rounded-xl bg-[#D4A857]/10 flex items-center justify-center border border-[#D4A857]/20">
+                  <div className="h-8 w-8 rounded-full bg-[#D4A857]/10 flex items-center justify-center border border-[#D4A857]/20">
                     <GraduationCap size={16} className="text-[#D4A857]" />
                   </div>
                   <div className="bg-white/5 border border-[#D4A857]/10 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
@@ -208,7 +208,7 @@ export function AdmissionAI() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1E0C03] to-[#1A0A02] border border-[#D4A857]/30 text-[#D4A857] shadow-2xl transition-all relative overflow-hidden group"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#1E0C03] to-[#1A0A02] border border-[#D4A857]/30 text-[#D4A857] shadow-2xl transition-all relative overflow-hidden group"
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-[#D4A857]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         {isOpen ? (
