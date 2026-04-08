@@ -18,7 +18,8 @@ const navLinks = [
       { label: "পলিটেকনিক", labelEn: "Polytechnic", path: "/polytechnic-admission" },
     ]
   },
-  { label: "অ্যাডমিশন", labelEn: "Admission", path: "/admission-bondu" },
+  { label: "অ্যাডমিশন", labelEn: "Admission", path: "/admission" },
+  { label: "বন্ধু", labelEn: "Bondu", path: "/admission-bondu" },
   { label: "আবাসন", labelEn: "Accommodation", path: "/accommodation" },
   { label: "টিউটোরিয়াল", labelEn: "Tutorial", path: "/tutorial" },
   { label: "নোটিশ বোর্ড", labelEn: "Notice", path: "/notice" },

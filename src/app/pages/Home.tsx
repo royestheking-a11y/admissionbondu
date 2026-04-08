@@ -129,19 +129,19 @@ export default function Home() {
       />
       {/* ─── Hero ─── */}
       <section className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden bg-[#1A0A02]">
-        {/* Background Overlay */}
+        {/* Premium Background Layer */}
         <div className="absolute inset-0 z-0">
-          <img
-            src={HERO_IMAGES[0]}
-            alt="University Background"
-            className="w-full h-full object-cover blur-md brightness-[0.4]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A0A02]/60 via-transparent to-[#1A0A02]/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1A0A02] via-[#3B1A0A] to-[#1A0A02]" />
+          {/* Subtle Texture Overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A857' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+          {/* Radial Center Glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#1A0A02_100%)] opacity-60" />
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-[#D4A857]/10 rounded-full blur-[100px] animate-pulse pointer-events-none" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#C8860A]/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#D4A857]/5 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-40 left-10 w-64 h-64 bg-[#C8860A]/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
+        <div className="absolute bottom-40 right-10 w-80 h-80 bg-[#D4A857]/5 rounded-full blur-[120px] animate-pulse pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 py-20 flex flex-col items-center text-center">
           <motion.div

@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Universities from "./pages/Universities";
 import UniversityDetail from "./pages/UniversityDetail";
 import AdmissionSupport from "./pages/AdmissionSupport";
+import AdmissionBondu from "./pages/AdmissionBondu";
 import MedicalAdmission from "./pages/MedicalAdmission";
 import Accommodation from "./pages/Accommodation";
 import Tutorial from "./pages/Tutorial";
@@ -28,7 +29,8 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: "universities", Component: Universities },
       { path: "universities/:id", Component: UniversityDetail },
-      { path: "admission-bondu", Component: AdmissionSupport },
+      { path: "admission", Component: AdmissionSupport },
+      { path: "admission-bondu", Component: AdmissionBondu },
       { path: "medical-admission", Component: MedicalAdmission },
       { path: "polytechnic-admission", Component: PolytechnicAdmission },
       { path: "accommodation", Component: Accommodation },

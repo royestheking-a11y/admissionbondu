@@ -9,16 +9,9 @@ import {
 
 import { universities as defaultUniversities } from "../data/universities";
 import { apiFetch } from "../lib/api";
+import { Seo } from "../components/Seo";
 
 const GRAD_IMAGE = "https://images.unsplash.com/photo-1591218214141-45545921d2d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwZ3JhZHVhdGlvbiUyMHN0dWRlbnR_sJTIwaGFwcHl8ZW58MXx8fHwxNzc0NDk5MDUzfDA&ixlib=rb-4.1.0&q=80&w=1080";
-
-const statusColors: Record<string, string> = {
-  Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  Processing: "bg-blue-100 text-blue-700 border-blue-200",
-  Submitted: "bg-purple-100 text-purple-700 border-purple-200",
-  Approved: "bg-green-100 text-green-700 border-green-200",
-  Rejected: "bg-red-100 text-red-700 border-red-200",
-};
 
 const packages = [
   {
@@ -168,6 +161,11 @@ export default function AdmissionSupport() {
 
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
+      <Seo 
+        title="Admission Support – Premium Service Packages"
+        description="We handle your entire university application process. Choose from our Basic, Standard, or Premium packages."
+      />
+
       {/* Header */}
       <div className="bg-[#1A0A02] relative overflow-hidden">
         <div className="absolute inset-0">
@@ -178,10 +176,10 @@ export default function AdmissionSupport() {
           <div className="flex items-center justify-center gap-2 text-[#D4A857]/70 text-sm mb-4">
             <Link to="/" className="hover:text-[#D4A857] transition-colors">Home</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-[#D4A857]">Admission Bondu</span>
+            <span className="text-[#D4A857]">Admission Support</span>
           </div>
           <h1 className="text-white mb-3" style={{ fontSize: "2.2rem", fontWeight: 700 }}>
-            Premium <span className="text-[#D4A857]">Admission Bondu</span> Service
+            Premium <span className="text-[#D4A857]">Admission Support</span> Service
           </h1>
           <p className="text-white/60 text-lg max-w-2xl mx-auto">
             We handle your entire university application process — from document preparation to final submission. You focus on studying, we handle the paperwork.
@@ -246,6 +244,7 @@ export default function AdmissionSupport() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setFormData(prev => ({ ...prev, package: pkg.name }))}
                   className={`w-full py-3 rounded-xl transition-all ${
                     pkg.popular
@@ -261,7 +260,7 @@ export default function AdmissionSupport() {
         </div>
       </section>
 
-      {/* Application Status Timeline (Demo) */}
+      {/* Application Status Tracker (Demo) */}
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-10">
@@ -371,7 +370,7 @@ export default function AdmissionSupport() {
               </Link>
             </motion.div>
           ) : (
-            <div className="bg-white border border-[#D4A857]/20 rounded-2xl p-6">
+            <div className="bg-white border border-[#D4A857]/20 rounded-2xl p-6 shadow-xl">
               <h3 className="text-[#1A0A02] mb-5" style={{ fontSize: "1rem", fontWeight: 600 }}>Application Form</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
