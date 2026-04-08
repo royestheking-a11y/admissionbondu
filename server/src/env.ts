@@ -8,6 +8,7 @@ const EnvSchema = z.object({
   CORS_ORIGIN: z.string().min(1).default("http://localhost:5173"),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   BACKEND_URL: z.string().url().optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

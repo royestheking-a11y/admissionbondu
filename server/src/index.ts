@@ -13,6 +13,7 @@ import { applicationsRouter } from "./routes/applications.js";
 import { accommodationRouter } from "./routes/accommodation.js";
 import { usersRouter } from "./routes/users.js";
 import { medicalRouter } from "./routes/medical.js";
+import { aiRouter } from "./routes/ai.js";
 import { Env } from "./env.js";
 
 const env = getEnv();
@@ -64,6 +65,7 @@ async function main() {
   app.use("/api/accommodation", accommodationRouter(env.JWT_SECRET));
   app.use("/api/users", usersRouter(env.JWT_SECRET));
   app.use("/api/medical", medicalRouter());
+  app.use("/api/ai", aiRouter(env.GEMINI_API_KEY));
 
   app.listen(env.PORT, () => {
     // eslint-disable-next-line no-console
