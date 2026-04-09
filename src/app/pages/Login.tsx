@@ -138,10 +138,11 @@ export default function Login() {
       }
     };
 
-    // Small delay to let AnimatePresence mount the ref
+    // Small delay to let AnimatePresence mount the ref.
+    // Reduced to 50ms now that script is pre-loaded in App.tsx
     const timer = setTimeout(() => {
       if (mounted) void initGoogle();
-    }, 250);
+    }, 50);
 
     return () => { 
       mounted = false; 
@@ -395,7 +396,14 @@ export default function Login() {
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full flex justify-center"></div>
+                            <>
+                              {/* Skeleton Loader - shown while Google iframe loads */}
+                              <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none opacity-[0.35]">
+                                <GoogleLogo className="w-5 h-5 flex-shrink-0 grayscale" />
+                                <span className="text-sm font-medium text-[#1A0A02]">Continue with Google</span>
+                              </div>
+                              <div ref={googleBtnRef} className="w-full flex justify-center relative z-10"></div>
+                            </>
                           ) : (
                             <button 
                               type="button"
@@ -601,7 +609,14 @@ export default function Login() {
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full flex justify-center"></div>
+                            <>
+                              {/* Skeleton Loader - shown while Google iframe loads */}
+                              <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none opacity-[0.35]">
+                                <GoogleLogo className="w-5 h-5 flex-shrink-0 grayscale" />
+                                <span className="text-sm font-medium text-[#1A0A02]">Sign up with Google</span>
+                              </div>
+                              <div ref={googleBtnRef} className="w-full flex justify-center relative z-10"></div>
+                            </>
                           ) : (
                             <button 
                               type="button"
