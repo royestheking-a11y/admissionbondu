@@ -374,21 +374,15 @@ export default function Login() {
                       </button>
                     </form>
 
-                    {/* Google Sign-in */}
-                    <div className="mt-4">
-                      <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-white/10" />
-                        <span className="text-white/35 text-xs">or</span>
-                        <div className="flex-1 h-px bg-white/10" />
-                      </div>
-
+                    {/* Google Sign-in Section - Unified & Stable Container */}
+                    <div className="mt-6 border-t border-white/5 pt-6">
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
                           {/* 1. The Fixed Visual Button (Always Visible) */}
                           <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
                             <GoogleLogo className="w-5 h-5 flex-shrink-0" />
                             <span className="text-sm font-semibold text-[#1A0A02]">
-                              Continue with Google
+                              {mode === "login" ? "Continue with Google" : "Sign up with Google"}
                             </span>
                           </div>
 
@@ -409,7 +403,7 @@ export default function Login() {
                         </div>
                       </div>
 
-                      <p className="text-center text-white/35 text-[11px] mt-2">
+                      <p className="text-center text-white/35 text-[11px] mt-3">
                         Secure authentication powered by Google.
                       </p>
                     </div>
@@ -420,7 +414,6 @@ export default function Login() {
                         Register Free
                       </button>
                     </p>
-
                   </div>
                 ) : (
                   /* ── REGISTER FORM ─────────────────────── */
@@ -589,41 +582,6 @@ export default function Login() {
                       </button>
                     </form>
 
-                    {/* Google Sign-up */}
-                    <div className="mt-5">
-                      <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-white/10" />
-                        <span className="text-white/35 text-xs">or</span>
-                        <div className="flex-1 h-px bg-white/10" />
-                      </div>
-
-                      <div className="w-full flex justify-center mt-2 group">
-                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
-                          {/* 1. The Fixed Visual Button (Always Visible) */}
-                          <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
-                            <GoogleLogo className="w-5 h-5 flex-shrink-0" />
-                            <span className="text-sm font-semibold text-[#1A0A02]">
-                              Sign up with Google
-                            </span>
-                          </div>
-
-                          {/* 2. The Invisible Official Trigger (Layered on top) */}
-                          {googleClientId ? (
-                            <div 
-                              ref={googleBtnRef} 
-                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                              style={{ transform: "scale(2)", transformOrigin: "center" }}
-                            ></div>
-                          ) : (
-                            <button 
-                              type="button"
-                              onClick={() => setError("Google Login is being configured. Please use Email for now.")}
-                              className="absolute inset-0 z-20 opacity-0 cursor-pointer"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
 
                     <p className="text-center text-white/40 text-sm mt-5">
                       Already have an account?{" "}
