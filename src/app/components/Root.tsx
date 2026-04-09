@@ -6,10 +6,10 @@ export function Root() {
   const location = useLocation();
 
 
-  const isLoginPage = location.pathname === "/login";
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
   const isDashboardPage = location.pathname.startsWith("/dashboard");
 
-  const hideChrome = isLoginPage || isDashboardPage;
+  const hideChrome = isAuthPage || isDashboardPage;
 
   return (
     <div className="min-h-screen flex flex-col">
