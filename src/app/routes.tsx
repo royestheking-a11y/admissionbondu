@@ -38,6 +38,7 @@ export const router = createBrowserRouter([
       { path: "notice", Component: Notice },
       { path: "dashboard", Component: Dashboard },
       { path: "login", Component: Login },
+      { path: "register", Component: Login },
       { path: "privacy-policy", Component: PrivacyPolicy },
       { path: "terms-of-service", Component: TermsOfService },
       { path: "disclaimer", Component: Disclaimer },

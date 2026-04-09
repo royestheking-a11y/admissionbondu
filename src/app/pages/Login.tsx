@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   GraduationCap, Mail, Lock, Phone, User, Eye, EyeOff,
@@ -45,15 +45,23 @@ export default function Login() {
 
   const { login, register, loginWithGoogle, isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const googleClientId = useMemo(() => import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, []);
   
   const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  // Set mode based on URL
+  useEffect(() => {
+    if (location.pathname === "/register") setMode("register");
+    else if (location.pathname === "/login") setMode("login");
+  }, [location.pathname]);
 
   // If already logged in, redirect based on role
   if (isLoggedIn && user) {
     navigate(user.role === "admin" ? "/admin" : "/dashboard");
     return null;
   }
+
 
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -110,6 +118,7 @@ export default function Login() {
     let mounted = true;
     const initGoogle = async () => {
       try {
+        if (!googleClientId) return;
         await loadGoogleIdentityScript();
         if (!mounted) return;
 
@@ -281,20 +290,25 @@ export default function Login() {
             ) : (
               <motion.div key={mode} initial={{ opacity: 0, x: mode === "login" ? -20 : 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
                 {/* Tab Switcher */}
-                <div className="bg-white/8 p-1 rounded-2xl mb-7 flex border border-white/10">
-                  {(["login", "register"] as const).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => { setMode(m); setStep(1); setError(""); }}
-                      className={`flex-1 py-2.5 rounded-xl text-sm transition-all ${
-                        mode === m ? "bg-[#D4A857] text-[#1A0A02]" : "text-white/50 hover:text-white"
-                      }`}
-                      style={{ fontWeight: mode === m ? 600 : 400 }}
-                    >
-                      {m === "login" ? "Login" : "Register"}
-                    </button>
-                  ))}
-                </div>
+                  <div className="bg-white/8 p-1 rounded-2xl mb-7 flex border border-white/10">
+                    {(["login", "register"] as const).map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => { 
+                          setMode(m); 
+                          setStep(1); 
+                          setError("");
+                          navigate(m === "login" ? "/login" : "/register");
+                        }}
+                        className={`flex-1 py-2.5 rounded-xl text-sm transition-all ${
+                          mode === m ? "bg-[#D4A857] text-[#1A0A02]" : "text-white/50 hover:text-white"
+                        }`}
+                        style={{ fontWeight: mode === m ? 600 : 400 }}
+                      >
+                        {m === "login" ? "Login" : "Register"}
+                      </button>
+                    ))}
+                  </div>
 
                 {/* ── LOGIN FORM ─────────────────────────── */}
                 {mode === "login" ? (
@@ -379,8 +393,20 @@ export default function Login() {
                       </div>
 
                       <div className="w-full flex justify-center mt-2 group">
-                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center">
-                          <div ref={googleBtnRef} className="scale-110"></div>
+                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
+                          {googleClientId ? (
+                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                          ) : (
+                            <button 
+                              type="button"
+                              onClick={() => setError("Google Login is being configured. Please use Email for now.")}
+                              className="flex items-center gap-3 w-full justify-center h-full px-4 text-[#1A0A02]"
+                              style={{ fontWeight: 600 }}
+                            >
+                              <GoogleLogo className="w-5 h-5 flex-shrink-0" />
+                              <span className="text-sm truncate">Continue with Google</span>
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -391,7 +417,7 @@ export default function Login() {
 
                     <p className="text-center text-white/40 text-sm mt-6">
                       Don't have an account?{" "}
-                      <button onClick={() => { setMode("register"); setError(""); }} className="text-[#D4A857] hover:opacity-80 transition-opacity">
+                      <button onClick={() => { setMode("register"); setError(""); navigate("/register"); }} className="text-[#D4A857] hover:opacity-80 transition-opacity">
                         Register Free
                       </button>
                     </p>
@@ -573,15 +599,27 @@ export default function Login() {
                       </div>
 
                       <div className="w-full flex justify-center mt-2 group">
-                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center">
-                          <div ref={googleBtnRef} className="scale-110"></div>
+                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
+                          {googleClientId ? (
+                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                          ) : (
+                            <button 
+                              type="button"
+                              onClick={() => setError("Google Login is being configured. Please use Email for now.")}
+                              className="flex items-center gap-3 w-full justify-center h-full px-4 text-[#1A0A02]"
+                              style={{ fontWeight: 600 }}
+                            >
+                              <GoogleLogo className="w-5 h-5 flex-shrink-0" />
+                              <span className="text-sm truncate">Sign up with Google</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <p className="text-center text-white/40 text-sm mt-5">
                       Already have an account?{" "}
-                      <button onClick={() => { setMode("login"); setError(""); }} className="text-[#D4A857] hover:opacity-80 transition-opacity">
+                      <button onClick={() => { setMode("login"); setError(""); navigate("/login"); }} className="text-[#D4A857] hover:opacity-80 transition-opacity">
                         Login
                       </button>
                     </p>
