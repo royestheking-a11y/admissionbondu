@@ -53,7 +53,14 @@ export default function Admin() {
       setStudents(studentsRes || []);
       setUniversities(unisRes?.length ? unisRes : initialUniversities);
       setApplications(appsRes || []);
-      setNotices(noticesRes?.length ? noticesRes : initialNotices);
+
+      const finalNotices = (noticesRes?.length ? noticesRes : initialNotices).sort((a: any, b: any) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(a.date);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(b.date);
+        return dateB.getTime() - dateA.getTime();
+      });
+      setNotices(finalNotices);
+
       setAccommodation(accomRes?.cityData ? accomRes.cityData : initialCityData);
       setMedical(medRes || []);
     } catch (err) {

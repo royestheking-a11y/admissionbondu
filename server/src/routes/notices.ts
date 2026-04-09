@@ -46,7 +46,7 @@ export function noticesRouter(jwtSecret: string) {
     if (search) filter.title = { $regex: search, $options: "i" };
 
     const docs = await NoticeModel.find(filter)
-      .sort({ urgent: -1, createdAt: -1 })
+      .sort({ createdAt: -1, urgent: -1 })
       .skip(skip ?? 0)
       .limit(limit ?? 200);
 

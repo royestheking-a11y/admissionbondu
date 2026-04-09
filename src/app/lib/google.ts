@@ -26,3 +26,30 @@ export function loadGoogleIdentityScript() {
   });
 }
 
+export interface GoogleButtonConfig {
+  clientId: string;
+  element: HTMLElement;
+  callback: (resp: any) => void;
+  width?: number;
+}
+
+export function initializeAndRenderGoogleButton({ clientId, element, callback, width }: GoogleButtonConfig) {
+  if (!window.google?.accounts?.id) return;
+
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback,
+    ux_mode: "popup",
+  });
+
+  window.google.accounts.id.renderButton(element, {
+    theme: "outline",
+    size: "large",
+    width: width || element.clientWidth,
+    shape: "pill",
+    text: "continue_with",
+    logo_alignment: "left",
+  });
+}
+
+

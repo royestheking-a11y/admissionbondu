@@ -86,7 +86,7 @@ export default function AdmissionBondu() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-60px)] bg-[#FFF8F0] flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-[calc(100vh-60px)] bg-[#FFF8F0] flex flex-col-reverse lg:flex-row overflow-hidden">
       <Seo 
         title="Bondu – Your Smart Admission Specialist"
         description="Connect with Bondu for personalized university guidance, application support, and professional advice."

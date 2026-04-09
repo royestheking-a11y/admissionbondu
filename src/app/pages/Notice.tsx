@@ -48,7 +48,7 @@ function NoticeInner({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | number | null>(null);
   const [notices, setNotices] = useState<any[]>(initialNotices);
 
   useEffect(() => {
@@ -56,7 +56,14 @@ function NoticeInner({
     (async () => {
       try {
         const res = await apiFetch<any[]>("/api/notices");
-        if (!cancelled && Array.isArray(res) && res.length) setNotices(res);
+        if (!cancelled && Array.isArray(res) && res.length) {
+          const sorted = [...res].sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(a.date);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(b.date);
+            return dateB.getTime() - dateA.getTime();
+          });
+          setNotices(sorted);
+        }
       } catch {
         // fallback to bundled data
       }
@@ -106,8 +113,8 @@ function NoticeInner({
           <div className="flex flex-wrap gap-2">
             {urgentNotices.map(n => (
               <button
-                key={n.id}
-                onClick={() => setExpandedId(n.id)}
+                key={n._id || n.id}
+                onClick={() => setExpandedId(n._id || n.id)}
                 className="px-3 py-1.5 bg-red-100 border border-red-200 text-red-700 text-xs rounded-lg hover:bg-red-200 transition-colors text-left max-w-xs truncate"
               >
                 {n.title}
@@ -196,7 +203,7 @@ function NoticeInner({
             <div className="space-y-3">
               {filtered.map((notice, i) => (
                 <motion.div
-                  key={notice.id}
+                  key={notice._id || notice.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
@@ -204,7 +211,7 @@ function NoticeInner({
                   <div
                     className={`bg-white border rounded-2xl overflow-hidden transition-all ${
                       notice.urgent ? "border-red-200" : "border-[#D4A857]/20"
-                    } ${expandedId === notice.id ? "shadow-md" : "hover:shadow-sm"}`}
+                    } ${expandedId === (notice._id || notice.id) ? "shadow-md" : "hover:shadow-sm"}`}
                   >
                     {notice.urgent && (
                       <div className="bg-red-500 text-white text-center py-1 text-xs">
@@ -213,7 +220,7 @@ function NoticeInner({
                     )}
                     <div
                       className="p-5 cursor-pointer"
-                      onClick={() => setExpandedId(expandedId === notice.id ? null : notice.id)}
+                      onClick={() => setExpandedId(expandedId === (notice._id || notice.id) ? null : (notice._id || notice.id))}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -228,10 +235,10 @@ function NoticeInner({
                           </div>
                           <h3 className="text-[#1A0A02] text-sm leading-snug" style={{ fontWeight: 600 }}>{notice.title}</h3>
                         </div>
-                        <ChevronRight className={`w-5 h-5 text-[#C8860A] flex-shrink-0 transition-transform ${expandedId === notice.id ? "rotate-90" : ""}`} />
+                        <ChevronRight className={`w-5 h-5 text-[#C8860A] flex-shrink-0 transition-transform ${expandedId === (notice._id || notice.id) ? "rotate-90" : ""}`} />
                       </div>
 
-                      {expandedId === notice.id && (
+                      {expandedId === (notice._id || notice.id) && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { connectDb } from "../db";
@@ -56,7 +57,9 @@ async function seedNotices() {
   if (!Array.isArray(seedNoticesData)) {
     throw new Error("Seed notices not found (expected export const initialNotices: []).");
   }
-  for (const n of seedNoticesData) {
+  // Seed in reverse order so that notices at the start of the array (newest)
+  // are created last, giving them a later createdAt timestamp.
+  for (const n of [...seedNoticesData].reverse()) {
     const filter = { legacyId: n.id };
     const update = {
       legacyId: n.id,

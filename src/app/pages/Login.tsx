@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -83,42 +83,58 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = async () => {
+  const handleGoogleCallback = useCallback(async (resp: any) => {
+    if (!resp?.credential) return;
     try {
       setError("");
       setLoading(true);
-      if (!googleClientId) throw new Error("Google Client ID not configured");
-      await loadGoogleIdentityScript();
-
-      const idToken: string = await new Promise((resolve, reject) => {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: (resp: any) => {
-            if (resp?.credential) resolve(resp.credential);
-            else reject(new Error("Google sign-in failed"));
-          },
-        });
-        // Popup sign-in
-        window.google.accounts.id.prompt((notification: any) => {
-          if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-            // If One Tap cannot show, still allow user to click again.
-          }
-        });
-        // Render a hidden button is more complex; using prompt+popup flow here.
-      });
-
-      const result = await loginWithGoogle(idToken);
-      setLoading(false);
+      const result = await loginWithGoogle(resp.credential);
       if (result.success) {
         navigate(result.role === "admin" ? "/admin" : "/dashboard");
       } else {
         setError(result.message);
       }
     } catch (e: any) {
-      setLoading(false);
       setError(e?.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [loginWithGoogle, navigate]);
+
+  useEffect(() => {
+    if (!googleClientId) return;
+
+    let mounted = true;
+    const initGoogle = async () => {
+      try {
+        await loadGoogleIdentityScript();
+        if (!mounted) return;
+
+        // Give a small delay to ensure the container is in the DOM due to AnimatePresence
+        setTimeout(() => {
+          const btn = document.getElementById("google-signin-btn");
+          if (btn && mounted) {
+            import("../lib/google").then((mod) => {
+              mod.initializeAndRenderGoogleButton({
+                clientId: googleClientId,
+                element: btn,
+                callback: handleGoogleCallback,
+              });
+            });
+          }
+        }, 100);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load Google SDK", err);
+      }
+    };
+
+    void initGoogle();
+    return () => { mounted = false; };
+  }, [googleClientId, handleGoogleCallback, mode]);
+
+  // After successful registration: switch to login, autofill email, clear password, focus password.
+
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -355,18 +371,7 @@ export default function Login() {
                         <div className="flex-1 h-px bg-white/10" />
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => void handleGoogle()}
-                        disabled={loading}
-                        className="w-full py-3.5 bg-white text-[#1A0A02] rounded-xl flex items-center justify-center gap-3 hover:shadow-xl hover:shadow-black/20 transition-all disabled:opacity-60"
-                        style={{ fontWeight: 700 }}
-                      >
-                        <span className="w-6 h-6 bg-white rounded-md flex items-center justify-center">
-                          <GoogleLogo className="w-5 h-5" />
-                        </span>
-                        Continue with Google
-                      </button>
+                      <div id="google-signin-btn" className="w-full h-[50px] flex justify-center translate-y-2"></div>
 
                       <p className="text-center text-white/35 text-[11px] mt-2">
                         Secure authentication powered by Google.
@@ -556,18 +561,7 @@ export default function Login() {
                         <div className="flex-1 h-px bg-white/10" />
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => void handleGoogle()}
-                        disabled={loading}
-                        className="w-full py-3.5 bg-white text-[#1A0A02] rounded-xl flex items-center justify-center gap-3 hover:shadow-xl hover:shadow-black/20 transition-all disabled:opacity-60"
-                        style={{ fontWeight: 700 }}
-                      >
-                        <span className="w-6 h-6 bg-white rounded-md flex items-center justify-center">
-                          <GoogleLogo className="w-5 h-5" />
-                        </span>
-                        Sign up with Google
-                      </button>
+                      <div id="google-signin-btn" className="w-full h-[50px] flex justify-center translate-y-2"></div>
                     </div>
 
                     <p className="text-center text-white/40 text-sm mt-5">
