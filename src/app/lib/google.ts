@@ -34,18 +34,29 @@ export interface GoogleButtonConfig {
   theme?: "outline" | "filled_blue" | "filled_black";
 }
 
+let isInitialized = false;
+
 export function initializeAndRenderGoogleButton({ clientId, element, callback, width, theme }: GoogleButtonConfig) {
   if (!window.google?.accounts?.id) return;
 
-  window.google.accounts.id.initialize({
-    client_id: clientId,
-    callback,
-    ux_mode: "popup",
-  });
+  // Initialize only once per session to avoid GIS warnings/errors
+  if (!isInitialized) {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback,
+      ux_mode: "popup",
+    });
+    isInitialized = true;
+  }
+
+  // Clear existing content to prevent ghosting or multiple buttons
+  if (element) {
+    element.innerHTML = "";
+  }
 
   // Calculate width: Google button max is 400px.
-  // We try to get the container's width but cap it.
-  const containerWidth = width || element.parentElement?.clientWidth || 340;
+  // Use a fallback of 320px if the container width is not immediately available (common in SSR/fast mounts)
+  const containerWidth = width || element.parentElement?.clientWidth || element.clientWidth || 320;
   const finalWidth = Math.min(Math.max(containerWidth, 200), 400);
 
   window.google.accounts.id.renderButton(element, {
@@ -57,6 +68,7 @@ export function initializeAndRenderGoogleButton({ clientId, element, callback, w
     logo_alignment: "left",
   });
 }
+
 
 
 

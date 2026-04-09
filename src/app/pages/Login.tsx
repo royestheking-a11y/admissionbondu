@@ -140,8 +140,8 @@ export default function Login() {
 
     // Small delay to let AnimatePresence mount the ref
     const timer = setTimeout(() => {
-      void initGoogle();
-    }, 150);
+      if (mounted) void initGoogle();
+    }, 250);
 
     return () => { 
       mounted = false; 
@@ -395,7 +395,7 @@ export default function Login() {
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                            <div ref={googleBtnRef} className="w-full flex justify-center"></div>
                           ) : (
                             <button 
                               type="button"
@@ -601,7 +601,7 @@ export default function Login() {
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                            <div ref={googleBtnRef} className="w-full flex justify-center"></div>
                           ) : (
                             <button 
                               type="button"
