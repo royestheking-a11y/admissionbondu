@@ -388,7 +388,7 @@ export default function Login() {
                           <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
                             <GoogleLogo className="w-5 h-5 flex-shrink-0" />
                             <span className="text-sm font-semibold text-[#1A0A02]">
-                              {mode === "login" ? "Continue with Google" : "Sign up with Google"}
+                              Continue with Google
                             </span>
                           </div>
 
@@ -603,7 +603,7 @@ export default function Login() {
                           <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
                             <GoogleLogo className="w-5 h-5 flex-shrink-0" />
                             <span className="text-sm font-semibold text-[#1A0A02]">
-                              {mode === "login" ? "Continue with Google" : "Sign up with Google"}
+                              Sign up with Google
                             </span>
                           </div>
 
