@@ -31,9 +31,10 @@ export interface GoogleButtonConfig {
   element: HTMLElement;
   callback: (resp: any) => void;
   width?: number;
+  theme?: "outline" | "filled_blue" | "filled_black";
 }
 
-export function initializeAndRenderGoogleButton({ clientId, element, callback, width }: GoogleButtonConfig) {
+export function initializeAndRenderGoogleButton({ clientId, element, callback, width, theme }: GoogleButtonConfig) {
   if (!window.google?.accounts?.id) return;
 
   window.google.accounts.id.initialize({
@@ -42,14 +43,20 @@ export function initializeAndRenderGoogleButton({ clientId, element, callback, w
     ux_mode: "popup",
   });
 
+  // Calculate width: Google button max is 400px.
+  // We try to get the container's width but cap it.
+  const containerWidth = width || element.parentElement?.clientWidth || 340;
+  const finalWidth = Math.min(Math.max(containerWidth, 200), 400);
+
   window.google.accounts.id.renderButton(element, {
-    theme: "outline",
+    theme: theme || "outline",
     size: "large",
-    width: width || element.clientWidth,
-    shape: "pill",
+    width: finalWidth,
+    shape: "rectangular",
     text: "continue_with",
     logo_alignment: "left",
   });
 }
+
 
 

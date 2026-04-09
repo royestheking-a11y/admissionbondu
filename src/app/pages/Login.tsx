@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -46,12 +46,15 @@ export default function Login() {
   const { login, register, loginWithGoogle, isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
   const googleClientId = useMemo(() => import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined, []);
+  
+  const googleBtnRef = useRef<HTMLDivElement>(null);
 
   // If already logged in, redirect based on role
   if (isLoggedIn && user) {
     navigate(user.role === "admin" ? "/admin" : "/dashboard");
     return null;
   }
+
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [regForm, setRegForm] = useState({
@@ -110,27 +113,31 @@ export default function Login() {
         await loadGoogleIdentityScript();
         if (!mounted) return;
 
-        // Give a small delay to ensure the container is in the DOM due to AnimatePresence
-        setTimeout(() => {
-          const btn = document.getElementById("google-signin-btn");
-          if (btn && mounted) {
-            import("../lib/google").then((mod) => {
-              mod.initializeAndRenderGoogleButton({
-                clientId: googleClientId,
-                element: btn,
-                callback: handleGoogleCallback,
-              });
-            });
-          }
-        }, 100);
+        // Ensure the ref is available
+        if (googleBtnRef.current && mounted) {
+          const mod = await import("../lib/google");
+          mod.initializeAndRenderGoogleButton({
+            clientId: googleClientId,
+            element: googleBtnRef.current,
+            callback: handleGoogleCallback,
+            theme: "outline",
+          });
+        }
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("Failed to load Google SDK", err);
       }
     };
 
-    void initGoogle();
-    return () => { mounted = false; };
+    // Small delay to let AnimatePresence mount the ref
+    const timer = setTimeout(() => {
+      void initGoogle();
+    }, 150);
+
+    return () => { 
+      mounted = false; 
+      clearTimeout(timer);
+    };
   }, [googleClientId, handleGoogleCallback, mode]);
 
   // After successful registration: switch to login, autofill email, clear password, focus password.
@@ -371,7 +378,11 @@ export default function Login() {
                         <div className="flex-1 h-px bg-white/10" />
                       </div>
 
-                      <div id="google-signin-btn" className="w-full h-[50px] flex justify-center translate-y-2"></div>
+                      <div className="w-full flex justify-center mt-2 group">
+                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center">
+                          <div ref={googleBtnRef} className="scale-110"></div>
+                        </div>
+                      </div>
 
                       <p className="text-center text-white/35 text-[11px] mt-2">
                         Secure authentication powered by Google.
@@ -561,7 +572,11 @@ export default function Login() {
                         <div className="flex-1 h-px bg-white/10" />
                       </div>
 
-                      <div id="google-signin-btn" className="w-full h-[50px] flex justify-center translate-y-2"></div>
+                      <div className="w-full flex justify-center mt-2 group">
+                        <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center">
+                          <div ref={googleBtnRef} className="scale-110"></div>
+                        </div>
+                      </div>
                     </div>
 
                     <p className="text-center text-white/40 text-sm mt-5">
