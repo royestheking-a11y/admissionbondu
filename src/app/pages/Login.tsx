@@ -384,18 +384,27 @@ export default function Login() {
 
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
+                          {/* 1. The Fixed Visual Button (Always Visible) */}
+                          <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
+                            <GoogleLogo className="w-5 h-5 flex-shrink-0" />
+                            <span className="text-sm font-semibold text-[#1A0A02]">
+                              {mode === "login" ? "Continue with Google" : "Sign up with Google"}
+                            </span>
+                          </div>
+
+                          {/* 2. The Invisible Official Trigger (Layered on top) */}
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                            <div 
+                              ref={googleBtnRef} 
+                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                              style={{ transform: "scale(2)", transformOrigin: "center" }}
+                            ></div>
                           ) : (
                             <button 
                               type="button"
                               onClick={() => setError("Google Login is being configured. Please use Email for now.")}
-                              className="flex items-center gap-3 w-full justify-center h-full px-4 text-[#1A0A02]"
-                              style={{ fontWeight: 600 }}
-                            >
-                              <GoogleLogo className="w-5 h-5 flex-shrink-0" />
-                              <span className="text-sm truncate">Continue with Google</span>
-                            </button>
+                              className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                            />
                           )}
                         </div>
                       </div>
@@ -590,18 +599,27 @@ export default function Login() {
 
                       <div className="w-full flex justify-center mt-2 group">
                         <div className="w-full max-w-[400px] h-[52px] bg-white rounded-xl overflow-hidden border-2 border-transparent group-hover:border-[#D4A857]/40 transition-all shadow-lg flex items-center justify-center relative">
+                          {/* 1. The Fixed Visual Button (Always Visible) */}
+                          <div className="absolute inset-0 flex items-center justify-center gap-3 px-4 pointer-events-none">
+                            <GoogleLogo className="w-5 h-5 flex-shrink-0" />
+                            <span className="text-sm font-semibold text-[#1A0A02]">
+                              {mode === "login" ? "Continue with Google" : "Sign up with Google"}
+                            </span>
+                          </div>
+
+                          {/* 2. The Invisible Official Trigger (Layered on top) */}
                           {googleClientId ? (
-                            <div ref={googleBtnRef} className="w-full h-full flex items-center justify-center"></div>
+                            <div 
+                              ref={googleBtnRef} 
+                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                              style={{ transform: "scale(2)", transformOrigin: "center" }}
+                            ></div>
                           ) : (
                             <button 
                               type="button"
                               onClick={() => setError("Google Login is being configured. Please use Email for now.")}
-                              className="flex items-center gap-3 w-full justify-center h-full px-4 text-[#1A0A02]"
-                              style={{ fontWeight: 600 }}
-                            >
-                              <GoogleLogo className="w-5 h-5 flex-shrink-0" />
-                              <span className="text-sm truncate">Sign up with Google</span>
-                            </button>
+                              className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                            />
                           )}
                         </div>
                       </div>

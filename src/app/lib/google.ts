@@ -34,22 +34,27 @@ export interface GoogleButtonConfig {
   theme?: "outline" | "filled_blue" | "filled_black";
 }
 
+let isInitialized = false;
+
 export function initializeAndRenderGoogleButton({ clientId, element, callback, width, theme }: GoogleButtonConfig) {
   if (!window.google?.accounts?.id || !element) return;
 
-  // Always initialize before rendering to ensure fresh callback binding in SPAs
-  window.google.accounts.id.initialize({
-    client_id: clientId,
-    callback,
-    ux_mode: "popup",
-  });
+  // Initialize only once per session to eliminate the "called multiple times" GIS warning
+  if (!isInitialized) {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback,
+      ux_mode: "popup",
+    });
+    isInitialized = true;
+  }
 
   // Clear container to prevent duplicate iframes
   element.innerHTML = "";
 
   // Calculate width: Google button max is 400px.
-  const containerWidth = width || element.parentElement?.clientWidth || element.clientWidth || 320;
-  const finalWidth = Math.min(Math.max(containerWidth, 200), 400);
+  // For the "Hidden Overlay" technique, we use a fixed 400px width to ensure it covers our manual button.
+  const finalWidth = 400;
 
   window.google.accounts.id.renderButton(element, {
     theme: theme || "outline",
@@ -60,6 +65,7 @@ export function initializeAndRenderGoogleButton({ clientId, element, callback, w
     logo_alignment: "left",
   });
 }
+
 
 
 
